@@ -24,6 +24,7 @@
 
 #include <iostream>
 #include <ws2tcpip.h>
+#include <sys/sendfile.h>
 
 #pragma comment (lib, "ws2_32.lib")  // Add winsock library
 
