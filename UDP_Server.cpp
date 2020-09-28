@@ -1,6 +1,6 @@
 /*  Christopher Patrone
     Network Design
-    Phase 1
+    Phase 2
     This program is written in C++, and the goal is to create a UDP server and client that
     can send messages back and forth.
 
@@ -19,11 +19,17 @@
 
     [4]  Hall, Brian. Beej's Guide to Network Programming. "Using Internet Sockets". 
          beej.us. 2019. URL: https://beej.us/guide/bgnet/html/#windows
+         
+    [5]  Cipher Deprogres. "C++ Winsock Transfer Data with Socket". Youtube. 2018.
+         URL: https://www.youtube.com/watch?v=NHrk33uCzL8
 
 */
 
 #include <iostream>
 #include <ws2tcpip.h>
+#include <fstream>  ///// For opening files
+#include "atlstr.h"  ///// For opening bitmap images
+#include <windows.h>
 #include <sys/sendfile.h>
 
 #pragma comment (lib, "ws2_32.lib")  // Add winsock library
@@ -78,6 +84,38 @@ void main()
 
         }
 
+    
+    
+         ///// Try to open a file
+        ifstream file;
+        file.open(buffer, ios::binary);
+
+        if (file.is_open()) {
+            cout << "File " << buffer << " is open" << endl;
+            file.seekg(0, ios::beg);
+
+            // read file with do-while loop
+            do {
+                // read and send part file to client
+                file.read(buffer, 1024);
+                
+                
+                /////  Load Bitmap Image
+                if (file.gcount() > 0) {
+                    int SendInfo = sendto(sock, buffer, file.gcount(), 0, (sockaddr*)&client, clientLength);
+
+                    if (SendInfo == SOCKET_ERROR) {
+                        // error sending data - break loop
+                        cout << "ERROR: Data was not sent" << endl;
+                        return;
+                    }
+                }
+            } while (file.gcount() > 0);
+            file.close();
+        }    
+    
+    
+    
         // Client message information
         char clientIP[256];
         ZeroMemory(clientIP, 256);  // Zero buffer for client message
