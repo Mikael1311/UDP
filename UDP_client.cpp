@@ -19,6 +19,9 @@
 
     [4]  Hall, Brian. Beej's Guide to Network Programming. "Using Internet Sockets".
          beej.us. 2019. URL: https://beej.us/guide/bgnet/html/#windows
+         
+    [5]  Cipher Deprogres. "C++ Winsock Transfer Data with Socket". Youtube. 2018.
+         URL: https://www.youtube.com/watch?v=NHrk33uCzL8
 
 */
 
@@ -26,6 +29,7 @@
 #include <ws2tcpip.h>
 #include <string>
 #include <sys/sendfile.h>
+#include <fstream> ///// For opening files
 
 #pragma comment (lib, "ws2_32.lib")  // Add winsock library
 
@@ -69,7 +73,12 @@ void main(int argc, char* argv[])  // Command line input
     ///// Ask for user input message
     char command;
     string s2;
-    cout << "Press m to enter message, x to exit" << endl;
+    string FileName;  ///// Name of file to send
+    ofstream file;  ///// File to open
+    char fBuff[1024];  ///// Buffer array for file
+    int fileDownloaded = 0;  ///// Keep track of file being downloaded
+    
+    cout << "Press m to enter message, f to enter a file name, x to exit" << endl;
     cin >> command;
     cin.ignore(256, '\n');  // Will the user send a message, or exit the client program
 
@@ -91,7 +100,40 @@ void main(int argc, char* argv[])  // Command line input
             ZeroMemory(buff2, 1024);  // Zero the buffer
 
         }
-        cout << "Press m to enter message, x to exit" << endl;  // Ask if user wants to send another message
+        
+        
+        ///// SENDING A FILE
+        ///// User inputs "f" to send a file
+        else if (command == 'f') {
+            cout << "Enter File Name: ";
+            cin.ignore(0, '\n');
+            getline(cin, FileName);  ///// User inputs name of file to send
+
+            int sendOKf = sendto(sock2, FileName.c_str(), FileName.size() + 1, 0, (sockaddr*)&server, sizeof(server));
+
+            ///// Check for errors sending filename
+            if (sendOKf == SOCKET_ERROR) {
+                cout << "ERROR: File name did not send" << WSAGetLastError() << endl;
+            }
+
+            else {
+                cout << "File name Sent Successfully" << endl;
+            }
+
+            file.open(FileName, ios::binary | ios::trunc);  ///// Open file
+
+            do {
+                memset(fBuff, 0, 1024);
+                int bytesR3 = recvfrom(sock2, fBuff, 1024, 0, (sockaddr*)&server, &serverSize);
+
+                file.write(fBuff, bytesR3);
+                fileDownloaded += bytesR3;
+            } while (fileDownloaded < FileName.size());
+            file.close();
+        }
+        
+        
+        cout << "Press m to enter message, f to enter a file name, x to exit" << endl;  // Ask if user wants to send another message
         cin >> command;
         cin.ignore(256, '\n');
     }
