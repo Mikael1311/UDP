@@ -57,15 +57,6 @@ void main(int argc, char* argv[])  // Command line input
     string s(argv[1]);
     int sendOK = sendto(sock2, s.c_str(), s.size() + 1, 0, (sockaddr*)&server, sizeof(server));  // Send command line argument to server
 
-    // Check for errors sending message
-    if (sendOK == SOCKET_ERROR) {
-        cout << "ERROR: Message did not send" << WSAGetLastError() << endl;
-    }
-
-    else {
-        cout << "Message Sent Successfully" << endl;  // Confirm Client has sent message
-    }
-
     // Confirm server received message
     char buff[1024];
     int serverSize = sizeof(server);
@@ -73,12 +64,6 @@ void main(int argc, char* argv[])  // Command line input
 
     cout << "SERVER SUCCESSFULLY RECEIVED MESSAGE: " << buff << endl;
     ZeroMemory(buff, 1024);  // Zero the buffer
-
-    // Check for errors
-    if (bytesR == SOCKET_ERROR) {
-        cout << "ERROR: Failure to receive confirmation that server received message" << WSAGetLastError() << endl;
-        return;
-    }
 
     
     ///// Ask for user input message
@@ -98,27 +83,12 @@ void main(int argc, char* argv[])  // Command line input
 
             int sendOK = sendto(sock2, s2.c_str(), s2.size() + 1, 0, (sockaddr*)&server, sizeof(server));  // Send user message to the server
 
-            ///// Check for errors sending message
-            if (sendOK == SOCKET_ERROR) {
-                cout << "ERROR: Message did not send" << WSAGetLastError() << endl;
-            }
-
-            else {
-                cout << "Message Sent Successfully" << endl;
-            }
-
             ///// Confirm server received message
             char buff2[1024];
             int bytesR2 = recvfrom(sock2, buff2, 1024, 0, (sockaddr*)&server, &serverSize);  // Receive confirmation message from the server
 
             cout << "SERVER SUCCESSFULLY RECEIVED MESSAGE: " << buff2 << endl;
             ZeroMemory(buff2, 1024);  // Zero the buffer
-
-            // Check for errors
-            if (bytesR2 == SOCKET_ERROR) {
-                cout << "ERROR: Failure to receive confirmation that server received message" << WSAGetLastError() << endl;
-                return;
-            }
 
         }
         cout << "Press m to enter message, x to exit" << endl;  // Ask if user wants to send another message
