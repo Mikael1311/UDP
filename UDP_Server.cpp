@@ -76,10 +76,6 @@ void main()
         // Wait for message from the client
         int bytesRec = recvfrom(sock, buffer, 1024, 0, (sockaddr*)&client, &clientLength);
 
-        // Check for errors
-        if (bytesRec == SOCKET_ERROR) {
-            cout << "ERROR: Failure to receive from client" << WSAGetLastError() << endl;
-            return;
         }
 
         // Client message information
@@ -96,9 +92,6 @@ void main()
         /// Send message back to client, confirming message has been received
         int sendOkay = sendto(sock, buffer, 1024, 0, (sockaddr*)&client, clientLength);
 
-        /// Check for errors sending message
-        if (sendOkay == SOCKET_ERROR) {
-            cout << "ERROR: Message did not send back to client" << WSAGetLastError() << endl;
         }
     }
 
