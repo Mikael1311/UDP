@@ -1,4 +1,6 @@
 /*  Christopher Patrone
+    Mika Hamiti
+    Saja Freeman
     Network Design
     Phase 2
     This program is written in C++, and the goal is to create a UDP server and client that
@@ -19,7 +21,7 @@
 
     [4]  Hall, Brian. Beej's Guide to Network Programming. "Using Internet Sockets". 
          beej.us. 2019. URL: https://beej.us/guide/bgnet/html/#windows
-         
+
     [5]  Cipher Deprogres. "C++ Winsock Transfer Data with Socket". Youtube. 2018.
          URL: https://www.youtube.com/watch?v=NHrk33uCzL8
 
@@ -30,7 +32,8 @@
 #include <fstream>  ///// For opening files
 #include "atlstr.h"  ///// For opening bitmap images
 #include <windows.h>
-#include <sys/sendfile.h>
+#include <string>
+//#include <sys/sendfile.h>
 
 #pragma comment (lib, "ws2_32.lib")  // Add winsock library
 
@@ -82,12 +85,17 @@ void main()
         // Wait for message from the client
         int bytesRec = recvfrom(sock, buffer, 1024, 0, (sockaddr*)&client, &clientLength);
 
+        // Check for errors
+        if (bytesRec == SOCKET_ERROR) {
+            cout << "ERROR: Failure to receive from client" << WSAGetLastError() << endl;
+            return;
         }
 
-    
-    
-         ///// Try to open a file
-        ifstream file;
+
+
+
+        ///// Try to open a file
+        /*ifstream file;
         file.open(buffer, ios::binary);
 
         if (file.is_open()) {
@@ -98,8 +106,8 @@ void main()
             do {
                 // read and send part file to client
                 file.read(buffer, 1024);
-                
-                
+
+
                 /////  Load Bitmap Image
                 if (file.gcount() > 0) {
                     int SendInfo = sendto(sock, buffer, file.gcount(), 0, (sockaddr*)&client, clientLength);
@@ -112,10 +120,46 @@ void main()
                 }
             } while (file.gcount() > 0);
             file.close();
-        }    
-    
-    
-    
+        }
+        */
+
+
+        
+        /* use the function to recv file name here */
+        ofstream ofile;
+        ofile.open(buffer, ios::binary);
+
+        if (ofile.is_open())
+            cout << "File " << buffer << "is open" << endl;
+        else {
+            cout << "File could not be opened" << endl;
+            return;
+        }
+
+        ofile << "this is a test \n";
+        ofile.close();
+        ifstream file;
+        file.open(buffer, ios::binary);
+
+        if (file.is_open())
+            cout << "File " << buffer << "is open" << endl;
+        else {
+            cout << "File could not be opened" << endl;
+            return;
+        }
+
+        string line;
+        getline(file, line);
+        cout << line << endl;
+        file.close();
+        ////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
         // Client message information
         char clientIP[256];
         ZeroMemory(clientIP, 256);  // Zero buffer for client message
@@ -130,6 +174,9 @@ void main()
         /// Send message back to client, confirming message has been received
         int sendOkay = sendto(sock, buffer, 1024, 0, (sockaddr*)&client, clientLength);
 
+        /// Check for errors sending message
+        if (sendOkay == SOCKET_ERROR) {
+            cout << "ERROR: Message did not send back to client" << WSAGetLastError() << endl;
         }
     }
 
