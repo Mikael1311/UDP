@@ -42,7 +42,7 @@ void main(int argc, char* argv[])  // Command line input
         cout << "ERROR: Failure to start up winsock " << wstart << endl;  // ERROR, winsock cannot start up
         return;
     }
-
+    
     // Create a hint structure for the server
     sockaddr_in server;
     server.sin_family = AF_INET;
