@@ -24,6 +24,7 @@
 #include <ws2tcpip.h>
 #include <string>
 //#include <sys/sendfile.h>
+//#include <boost/progress.hpp>
 #include <fstream> ///// For opening files
 
 #pragma comment (lib, "ws2_32.lib")  // Add winsock library
@@ -33,6 +34,9 @@ using namespace std;
 
 void main(int argc, char* argv[])  // Command line input
 {
+    // start timing
+    /*progress_timer t; //if boost/progress library is used*/
+    
     // Initialize winsock
     WSADATA data;
     WORD version = MAKEWORD(2, 2);
