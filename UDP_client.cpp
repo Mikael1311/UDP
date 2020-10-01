@@ -6,18 +6,26 @@
     This program is written in C++, and the goal is to create a UDP server and client that
     can send messages and back and forth.
     This file is for the UDP client code.
+    
     REFERENCES:
+    
     [1]  Kelly, Sloan. Sloan Kelly. "Starter UDP Server and Client in C++".
          Youtube. 2017. URL: https://www.youtube.com/watch?v=uIanSvWou1M
+         
     [2]  mattew99g. Guided Hacking. "C++ Winsock Networking Tutorial - Introduction".
          Youtube. 2019. URL: https://www.youtube.com/watch?v=GiOgWfmWzPY
+         
     [3]  Tougher, Rob. Linux Gazette. "Linux Socket Programming in C++".
          tldp.org. 2002. URL: https://tldp.org/LDP/LG/issue74/tougher.html#4
+         
     [4]  Hall, Brian. Beej's Guide to Network Programming. "Using Internet Sockets".
          beej.us. 2019. URL: https://beej.us/guide/bgnet/html/#windows
 
     [5]  Cipher Deprogres. "C++ Winsock Transfer Data with Socket". Youtube. 2018.
          URL: https://www.youtube.com/watch?v=NHrk33uCzL8
+         
+    [6]  Boost C++ Libraries Url: https://www.boost.org/doc/libs/1_74_0/libs/timer/doc/original_timer.html
+         Downloadable zip file link: https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.zip
 */
 
 #include <iostream>
@@ -35,7 +43,7 @@ using namespace std;
 void main(int argc, char* argv[])  // Command line input
 {
     // start timing
-    /*progress_timer t; //if boost/progress library is used*/
+    //progress_timer t; //if boost/progress library is used
     
     // Initialize winsock
     WSADATA data;
