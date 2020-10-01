@@ -24,6 +24,9 @@
 
     [5]  Cipher Deprogres. "C++ Winsock Transfer Data with Socket". Youtube. 2018.
          URL: https://www.youtube.com/watch?v=NHrk33uCzL8
+         
+    [6]  Boost C++ Libraries Url: https://www.boost.org/doc/libs/1_74_0/libs/timer/doc/original_timer.html
+         Downloadable zip file link: https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.zip
 */
 
 #include <iostream>
@@ -33,6 +36,7 @@
 #include <windows.h>
 #include <string>
 //#include <sys/sendfile.h>
+#include <boost/timer.hpp>
 
 #pragma comment (lib, "ws2_32.lib")  // Add winsock library
 
@@ -41,6 +45,7 @@ using namespace std;
 
 void main()
 {
+    progress_timer t;  // start timing
     // Initialize winsock
     WSADATA data;
     WORD version = MAKEWORD(2, 2);
