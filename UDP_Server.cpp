@@ -36,7 +36,7 @@
 #include <windows.h>
 #include <string>
 //#include <sys/sendfile.h>
-#include <boost/timer.hpp>
+//#include <boost/timer.hpp>
 
 #pragma comment (lib, "ws2_32.lib")  // Add winsock library
 
@@ -45,7 +45,9 @@ using namespace std;
 
 void main()
 {
-    progress_timer t;  // start timing
+    // start timing
+    //progress_timer t; //if boost/progress library is used
+    
     // Initialize winsock
     WSADATA data;
     WORD version = MAKEWORD(2, 2);
