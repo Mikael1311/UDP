@@ -24,7 +24,6 @@
 
     [5]  Cipher Deprogres. "C++ Winsock Transfer Data with Socket". Youtube. 2018.
          URL: https://www.youtube.com/watch?v=NHrk33uCzL8
-
 */
 
 #include <iostream>
