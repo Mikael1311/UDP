@@ -4,35 +4,26 @@
     Network Design
     Phase 2
     This program is written in C++, and the goal is to create a UDP server and client that
-    can send messages and back and forth.
+    can send messages and back and forth.  Phase 2 aims to send files from the client to the server.
     This file is for the UDP client code.
-    
     REFERENCES:
-    
     [1]  Kelly, Sloan. Sloan Kelly. "Starter UDP Server and Client in C++".
          Youtube. 2017. URL: https://www.youtube.com/watch?v=uIanSvWou1M
-         
     [2]  mattew99g. Guided Hacking. "C++ Winsock Networking Tutorial - Introduction".
          Youtube. 2019. URL: https://www.youtube.com/watch?v=GiOgWfmWzPY
-         
     [3]  Tougher, Rob. Linux Gazette. "Linux Socket Programming in C++".
          tldp.org. 2002. URL: https://tldp.org/LDP/LG/issue74/tougher.html#4
-         
     [4]  Hall, Brian. Beej's Guide to Network Programming. "Using Internet Sockets".
          beej.us. 2019. URL: https://beej.us/guide/bgnet/html/#windows
 
     [5]  Cipher Deprogres. "C++ Winsock Transfer Data with Socket". Youtube. 2018.
          URL: https://www.youtube.com/watch?v=NHrk33uCzL8
-         
-    [6]  Boost C++ Libraries Url: https://www.boost.org/doc/libs/1_74_0/libs/timer/doc/original_timer.html
-         Downloadable zip file link: https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.zip
 */
 
 #include <iostream>
 #include <ws2tcpip.h>
 #include <string>
 //#include <sys/sendfile.h>
-//#include <boost/progress.hpp>
 #include <fstream> ///// For opening files
 
 #pragma comment (lib, "ws2_32.lib")  // Add winsock library
@@ -42,9 +33,6 @@ using namespace std;
 
 void main(int argc, char* argv[])  // Command line input
 {
-    // start timing
-    //progress_timer t; //if boost/progress library is used
-    
     // Initialize winsock
     WSADATA data;
     WORD version = MAKEWORD(2, 2);
@@ -54,7 +42,7 @@ void main(int argc, char* argv[])  // Command line input
         cout << "ERROR: Failure to start up winsock " << wstart << endl;  // ERROR, winsock cannot start up
         return;
     }
-    
+
     // Create a hint structure for the server
     sockaddr_in server;
     server.sin_family = AF_INET;
@@ -81,7 +69,7 @@ void main(int argc, char* argv[])  // Command line input
     char command;
     string s2;
     string FileName;  ///// Name of file to send
-    ofstream file;  ///// File to open
+    ifstream file;  ///// File to open
     char fBuff[1024];  ///// Buffer array for file
     int fileDownloaded = 0;  ///// Keep track of file being downloaded
 
@@ -129,16 +117,34 @@ void main(int argc, char* argv[])  // Command line input
 
             file.open(FileName, ios::binary | ios::trunc);  ///// Open file
 
-            do {
+            fileDownloaded = FileName.size(); // Get the file's size
+            
+
+            if (FileName.size() < 1024)
+                sendto(sock2, FileName.c_str(), FileName.size(), 0, (sockaddr*)&server, sizeof(server));
+            //assuming bytes sent == filesize
+            else
+            {
+                int bytes_sent = 0;
+                while (bytes_sent < FileName.size())
+                {
+                    bytes_sent += sendto(sock2, FileName.c_str() + bytes_sent, 1024 - 1, 0, (sockaddr*)&server, sizeof(server));
+                }
+            }
+            // Loop to send file packets to server
+            /*do {
                 memset(fBuff, 0, 1024);
                 int bytesR3 = recvfrom(sock2, fBuff, 1024, 0, (sockaddr*)&server, &serverSize);
 
-                file.write(fBuff, bytesR3);
+                file.get(fBuff, bytesR3);
                 fileDownloaded += bytesR3;
             } while (fileDownloaded < FileName.size());
+            */
             file.close();
         }
+        ////////////////////////////////////////////////////////////////////////////
 
+        
 
         cout << "Press m to enter message, f to enter a file name, x to exit" << endl;  // Ask if user wants to send another message
         cin >> command;
