@@ -4,7 +4,7 @@
     Network Design
     Phase 2
     This program is written in C++, and the goal is to create a UDP server and client that
-    can send messages back and forth.
+    can send messages back and forth.  Phase 2 aims to send files from the client to the server.
 
     This file is for the UDP server code.
 
@@ -24,9 +24,7 @@
 
     [5]  Cipher Deprogres. "C++ Winsock Transfer Data with Socket". Youtube. 2018.
          URL: https://www.youtube.com/watch?v=NHrk33uCzL8
-         
-    [6]  Boost C++ Libraries Url: https://www.boost.org/doc/libs/1_74_0/libs/timer/doc/original_timer.html
-         Downloadable zip file link: https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.zip
+
 */
 
 #include <iostream>
@@ -36,7 +34,6 @@
 #include <windows.h>
 #include <string>
 //#include <sys/sendfile.h>
-//#include <boost/timer.hpp>
 
 #pragma comment (lib, "ws2_32.lib")  // Add winsock library
 
@@ -45,9 +42,6 @@ using namespace std;
 
 void main()
 {
-    // start timing
-    //progress_timer t; //if boost/progress library is used
-    
     // Initialize winsock
     WSADATA data;
     WORD version = MAKEWORD(2, 2);
@@ -97,8 +91,55 @@ void main()
             return;
         }
 
+        ////////////////////////////////////////////////////////////////////
+        ifstream in;  // File to copy from
+        in.open("Pier.bmp", ios::binary);
+        /* use the function to recv file name here */
+        ofstream ofile;
+        ofile.open(buffer, ios::binary);
+
+        if (ofile.is_open())
+            cout << "File " << buffer << " is open" << endl;
+        else {
+            cout << "File could not be opened" << endl;
+            return;
+        }
+
+        // receive file data
+        /*int Rem_data = 0;
+        while (Rem_data > 1024)
+        {
+            int bytes = recvfrom(sock, buffer, 1024, 0, (sockaddr*)&client, &clientLength);
+            ofile.put(in.get());;
+            Rem_data -= bytes;
+        }*/
+
+        for (int i = 0; i < 1920 * 1080 * 3 + 54; i++)  // Draw the bmp image to the output file
+            ofile.put(in.get());
 
 
+        ofile.close();
+        in.close();
+        ////////////////////////////////////////////////////////////////
+
+        // Client message information
+        char clientIP[256];
+        ZeroMemory(clientIP, 256);  // Zero buffer for client message
+
+        // Converts from internet address in binary format to standard text format
+        inet_ntop(AF_INET, &client.sin_addr, clientIP, 256);
+
+        // Output message received from client and the client's IP address
+        cout << "Message received from " << clientIP << " : " << buffer << endl;
+
+
+        /// Send message back to client, confirming message has been received
+        int sendOkay = sendto(sock, buffer, 1024, 0, (sockaddr*)&client, clientLength);
+
+        /// Check for errors sending message
+        if (sendOkay == SOCKET_ERROR) {
+            cout << "ERROR: Message did not send back to client" << WSAGetLastError() << endl;
+        }
 
         ///// Try to open a file
         /*ifstream file;
@@ -128,62 +169,6 @@ void main()
             file.close();
         }
         */
-
-
-        
-        /* use the function to recv file name here */
-        ofstream ofile;
-        ofile.open(buffer, ios::binary);
-
-        if (ofile.is_open())
-            cout << "File " << buffer << "is open" << endl;
-        else {
-            cout << "File could not be opened" << endl;
-            return;
-        }
-
-        ofile << "this is a test \n";
-        ofile.close();
-        ifstream file;
-        file.open(buffer, ios::binary);
-
-        if (file.is_open())
-            cout << "File " << buffer << "is open" << endl;
-        else {
-            cout << "File could not be opened" << endl;
-            return;
-        }
-
-        string line;
-        getline(file, line);
-        cout << line << endl;
-        file.close();
-        ////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-        // Client message information
-        char clientIP[256];
-        ZeroMemory(clientIP, 256);  // Zero buffer for client message
-
-        // Converts from internet address in binary format to standard text format
-        inet_ntop(AF_INET, &client.sin_addr, clientIP, 256);
-
-        // Output message received from client and the client's IP address
-        cout << "Message received from " << clientIP << " : " << buffer << endl;
-
-
-        /// Send message back to client, confirming message has been received
-        int sendOkay = sendto(sock, buffer, 1024, 0, (sockaddr*)&client, clientLength);
-
-        /// Check for errors sending message
-        if (sendOkay == SOCKET_ERROR) {
-            cout << "ERROR: Message did not send back to client" << WSAGetLastError() << endl;
-        }
     }
 
     // Close socket
