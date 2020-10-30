@@ -33,6 +33,9 @@ using namespace std;
 
 void main(int argc, char* argv[])  // Command line input
 {
+
+    /////const char* conversion(int inputint);  // Function
+
     // Initialize winsock
     WSADATA data;
     WORD version = MAKEWORD(2, 2);
@@ -123,17 +126,37 @@ void main(int argc, char* argv[])  // Command line input
 
             int i = 0;
             //int k = 0;
-            const int SIZE = 2048;
+            const int SIZE = 4096;
             int outputVal[SIZE];
+            int outputVal2[SIZE];
+            int outputVal3[SIZE];
+            int outputVal4[SIZE];
+            int outputVal5[SIZE];
 
             const char* charOut;
+            const char* charOut2;
+            const char* charOut3;
+            const char* charOut4;
+            const char* charOut5;
             const char* c[SIZE];
+            const char* c2[SIZE];
+            const char* c3[SIZE];
+            const char* c4[SIZE];
+            const char* c5[SIZE];
             // for loop copying input file to output file
             //for (k = 0; k < 2/*k < 1920 * 1080 * 3 + 54*/; k++) {
+
+                // Loop to send information to the server.
                 for (i = 0; i < SIZE; i++) {
                     //fout.put(file.get());  // Write to file within client folder
                     //cout << file.get() << endl;
+
+                    // file.get() returns an integer value
                     outputVal[i] = file.get();
+                    outputVal2[i] = file.get();
+                    outputVal3[i] = file.get();
+                    outputVal4[i] = file.get();
+                    outputVal5[i] = file.get();
                     //cout << outputVal[i];
                     //fout.put(outputVal);
                     // Convert file data to character to send to server
@@ -146,8 +169,33 @@ void main(int argc, char* argv[])  // Command line input
                     cout << charOut << "      " << i << endl;
                     c[i] = charOut;
 
+                    string temp_str2 = to_string(outputVal2[i]);
+                    charOut2 = temp_str2.c_str();
+                    cout << charOut2 << "      " << i << endl;
+                    c2[i] = charOut2;
+
+                    string temp_str3 = to_string(outputVal3[i]);
+                    charOut3 = temp_str3.c_str();
+                    cout << charOut3 << "      " << i << endl;
+                    c3[i] = charOut3;
+
+                    string temp_str4 = to_string(outputVal4[i]);
+                    charOut4 = temp_str4.c_str();
+                    cout << charOut4 << "      " << i << endl;
+                    c4[i] = charOut4;
+                    /////c4[i] = conversion(outputVal4[i]);
+
+                    string temp_str5 = to_string(outputVal5[i]);
+                    charOut5 = temp_str5.c_str();
+                    cout << charOut5 << "      " << i << endl;
+                    c5[i] = charOut5;
+
                     // Send information to server
-                    sendto(sock2, c[i], SIZE, 0, (sockaddr*)&server, sizeof(server));               
+                    sendto(sock2, c[i], SIZE, 0, (sockaddr*)&server, sizeof(server));    
+                    sendto(sock2, c2[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+                    sendto(sock2, c3[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+                    sendto(sock2, c4[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+                    sendto(sock2, c5[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
                 }
                 
             //}
@@ -194,6 +242,7 @@ void main(int argc, char* argv[])  // Command line input
     WSACleanup();
 
     return;
+
 }
 
 
@@ -218,4 +267,11 @@ void main(int argc, char* argv[])  // Command line input
     }
 
     return c[i];
+}*/
+
+/*const char* conversion(int inputint) {
+    string temp_string = to_string(inputint);
+    const char* charOutput = temp_string.c_str();
+    const char* C = charOutput;
+    return C;
 }*/
