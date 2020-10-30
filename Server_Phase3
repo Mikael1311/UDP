@@ -151,12 +151,21 @@ void main()
             //}
 
             //for (int i = 0; i < 1920 * 1080 * 3 + 54; i++) { // Draw the bmp image to the output file
-            const int SIZE = 2048;
+            const int SIZE = 4096;
             int d[SIZE];
             char buf2[SIZE];
+            char buf3[SIZE];
+            char buf4[SIZE];
+            char buf5[SIZE];
+            char buf6[SIZE];
+            int d2[SIZE];
+            int d3[SIZE];
+            int d4[SIZE];
+            int d5[SIZE];
         //ZeroMemory(buffer, 1024);  // Zero the buffer
         //for (int k = 0; k < 2/*k < 1920 * 1080 * 3 + 54*/; k++) {
             
+            // Loop to receive information about the .bmp from the client
             for (int i = 0; i < SIZE; i++) {
                 //cout << "HI" << &buffer << endl << endl;
 
@@ -165,6 +174,26 @@ void main()
                 d[i] = atoi(buf2);
                 //cout << d << endl;
                 ofile.put(d[i]);
+
+                int bytes2 = recvfrom(sock, buf3, SIZE, 0, (sockaddr*)&client, &clientLength);
+                d2[i] = atoi(buf3);
+                //cout << d << endl;
+                ofile.put(d2[i]);
+
+                int bytes3 = recvfrom(sock, buf4, SIZE, 0, (sockaddr*)&client, &clientLength);
+                d3[i] = atoi(buf4);
+                //cout << d << endl;
+                ofile.put(d3[i]);
+
+                int bytes4 = recvfrom(sock, buf5, SIZE, 0, (sockaddr*)&client, &clientLength);
+                d4[i] = atoi(buf5);
+                //cout << d << endl;
+                ofile.put(d4[i]);
+
+                int bytes5 = recvfrom(sock, buf6, SIZE, 0, (sockaddr*)&client, &clientLength);
+                d5[i] = atoi(buf6);
+                //cout << d << endl;
+                ofile.put(d5[i]);
             }
 
             for (int j = 0; j < 1920 * 1080 * 3 + 54 - SIZE; j++) {
@@ -179,103 +208,6 @@ void main()
         //}
             /*for (int x = 0; x < 10; x++) {
                 for (int g = 0; g < 1024; g++) {
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
-                    ofile.put(d[g]);
                     ofile.put(d[g]);
                     ofile.put(d[g]);
                     ofile.put(d[g]);
