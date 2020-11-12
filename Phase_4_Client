@@ -1,0 +1,421 @@
+/*  Christopher Patrone
+    Mika Hamiti
+    Saja Freeman
+    Network Design
+    Phase 4
+    This program is written in C++, and the goal is to create a UDP server and client that
+    can send messages and back and forth.  Phase 3 aims to send files from the client to the server, and use
+    a finite state machine to detect and correct issues with sending and receiving the data.
+    This file is for the UDP client code.  Phase 4 aims to improve upon Phase 3 code to detect and correct issues
+    with sending and receiving data.
+    REFERENCES:
+    [1]  Kelly, Sloan. Sloan Kelly. "Starter UDP Server and Client in C++".
+         Youtube. 2017. URL: https://www.youtube.com/watch?v=uIanSvWou1M
+    [2]  mattew99g. Guided Hacking. "C++ Winsock Networking Tutorial - Introduction".
+         Youtube. 2019. URL: https://www.youtube.com/watch?v=GiOgWfmWzPY
+    [3]  Tougher, Rob. Linux Gazette. "Linux Socket Programming in C++".
+         tldp.org. 2002. URL: https://tldp.org/LDP/LG/issue74/tougher.html#4
+    [4]  Hall, Brian. Beej's Guide to Network Programming. "Using Internet Sockets".
+         beej.us. 2019. URL: https://beej.us/guide/bgnet/html/#windows
+
+    [5]  Cipher Deprogres. "C++ Winsock Transfer Data with Socket". Youtube. 2018.
+         URL: https://www.youtube.com/watch?v=NHrk33uCzL8
+*/
+
+#include <iostream>
+#include <ws2tcpip.h>
+#include <string>
+//#include <sys/sendfile.h>
+#include <fstream> ///// For opening files
+#include<dos.h>   //for Sleep()
+
+#pragma comment (lib, "ws2_32.lib")  // Add winsock library
+
+using namespace std;
+
+// Function to intentionally corrupt bits
+int corruptBits(int dataint)
+{
+    if (dataint < 255 && dataint > -1) {
+        return 1;
+    }
+    else {
+        return dataint;
+    }
+}
+
+// Finite state machine, input data and sequence number
+int fsm(int data, int seq, int expseq) {
+
+    // If sequence number is the same as the expected sequence number, return sequence number
+    if (seq == expseq) {
+        return data;
+    }
+
+    else {
+        return -1;
+    }
+}
+
+
+void main(int argc, char* argv[])  // Command line input
+{
+
+    /////const char* conversion(int inputint);  // Function
+
+    // Initialize winsock
+    WSADATA data;
+    WORD version = MAKEWORD(2, 2);
+    int wstart = WSAStartup(version, &data);
+
+    if (wstart != 0) {
+        cout << "ERROR: Failure to start up winsock " << wstart << endl;  // ERROR, winsock cannot start up
+        return;
+    }
+
+    // Create a hint structure for the server
+    sockaddr_in server;
+    server.sin_family = AF_INET;
+    server.sin_port = htons(54000);  // Connect to port 54000
+    inet_pton(AF_INET, "127.0.0.1", &server.sin_addr);
+
+    // Create a socket
+    SOCKET sock2 = socket(AF_INET, SOCK_DGRAM, 0);
+
+    // Write out to socket
+    string s(argv[1]);
+    int sendOK = sendto(sock2, s.c_str(), s.size() + 1, 0, (sockaddr*)&server, sizeof(server));  // Send command line argument to server
+
+    // Confirm server received message
+    char buff[1024];
+    int serverSize = sizeof(server);
+    int bytesR = recvfrom(sock2, buff, 1024, 0, (sockaddr*)&server, &serverSize);  // Receive confirmation message from server
+
+    cout << "SERVER SUCCESSFULLY RECEIVED MESSAGE: " << buff << endl;
+    ZeroMemory(buff, 1024);  // Zero the buffer
+
+
+    ///// Ask for user input message
+    char command;
+    string s2;
+    string FileName;  ///// Name of file to send
+    ifstream file;  ///// File to open
+    char fBuff[1024];  ///// Buffer array for file
+    int fileDownloaded = 0;  ///// Keep track of file being downloaded
+
+    cout << "Press m to enter message, f to enter a file name, x to exit" << endl;
+    cin >> command;
+    cin.ignore(256, '\n');  // Will the user send a message, or exit the client program
+
+    while (command != 'x') {  // Loop until user enters "x" to exit
+
+        if (command == 'm' || command == 'M') {
+            cout << "Enter Message: ";
+            cin.ignore(0, '\n');
+            //cin >> s2;
+            getline(cin, s2);  // User inputs message
+
+            int sendOK = sendto(sock2, s2.c_str(), s2.size() + 1, 0, (sockaddr*)&server, sizeof(server));  // Send user message to the server
+
+            ///// Confirm server received message
+            char buff2[1024];
+            int bytesR2 = recvfrom(sock2, buff2, 1024, 0, (sockaddr*)&server, &serverSize);  // Receive confirmation message from the server
+
+            cout << "SERVER SUCCESSFULLY RECEIVED MESSAGE: " << buff2 << endl;
+            ZeroMemory(buff2, 1024);  // Zero the buffer
+
+        }
+
+
+        ///// SENDING A FILE
+        ///// User inputs "f" to send a file
+        else if (command == 'f') {
+            cout << "Enter File Name: ";
+            cin.ignore(0, '\n');
+            getline(cin, FileName);  ///// User inputs name of file to send
+
+            int sendOKf = sendto(sock2, FileName.c_str(), FileName.size() + 1, 0, (sockaddr*)&server, sizeof(server));
+
+            ///// Check for errors sending filename
+            if (sendOKf == SOCKET_ERROR) {
+                cout << "ERROR: File name did not send" << WSAGetLastError() << endl;
+            }
+
+            else {
+                cout << "File name Sent Successfully" << endl;
+            }
+            
+            file.open(FileName, ios::binary/* | ios::trunc*/);  ///// Open file
+
+      
+            ofstream fout; // Create an output file 
+            fout.open("out.bmp", ios::binary); // Open an output file
+
+            int i = 0;
+            //int k = 0;
+            const int SIZE = 4096;
+            int outputVal[SIZE];
+            int outputVal2[SIZE];
+            int outputVal3[SIZE];
+            int outputVal4[SIZE];
+            int outputVal5[SIZE];
+
+            const char* charOut;
+            const char* charOut2;
+            const char* charOut3;
+            const char* charOut4;
+            const char* charOut5;
+            const char* c[SIZE];
+            const char* c2[SIZE];
+            const char* c3[SIZE];
+            const char* c4[SIZE];
+            const char* c5[SIZE];
+
+            int checkbits2[SIZE];
+            // for loop copying input file to output file
+            //for (k = 0; k < 2/*k < 1920 * 1080 * 3 + 54*/; k++) {
+
+                // Loop to send information to the server.
+            for (i = 0; i < SIZE; i++) {
+                //fout.put(file.get());  // Write to file within client folder
+                //cout << file.get() << endl;
+
+                // file.get() returns an integer value
+                outputVal[i] = file.get();
+                outputVal2[i] = file.get();
+                outputVal3[i] = file.get();
+                outputVal4[i] = file.get();
+                outputVal5[i] = file.get();
+
+
+                // Call finite state machine function
+                if (outputVal[i] != -1) {
+                    outputVal[i] = fsm(outputVal[i], 1, 1);
+                }
+
+                //cout << outputVal[i];
+                //fout.put(outputVal);
+                // Convert file data to character to send to server
+                //char* outputValstring[1024][(((sizeof outputVal[i]) * CHAR_BIT) + 2) / 3 + 2];
+                //cout << endl << outputValstring << endl;
+
+                /// Convert integer input from .bmp to a const char* that can be sent through the socket
+                string temp_str = to_string(outputVal[i]);
+                charOut = temp_str.c_str();
+                c[i] = charOut;
+
+                //// Corrupt some of the values
+                checkbits2[i] = outputVal2[i];
+                outputVal2[i] = corruptBits(outputVal2[i]);
+                // Fix any corruption
+                if (outputVal2[i] != checkbits2[i]) {
+                    outputVal2[i] = checkbits2[i];
+                }
+
+                string temp_str2 = to_string(outputVal2[i]);
+                charOut2 = temp_str2.c_str();
+                c2[i] = charOut2;
+
+                string temp_str3 = to_string(outputVal3[i]);
+                charOut3 = temp_str3.c_str();
+                c3[i] = charOut3;
+
+                string temp_str4 = to_string(outputVal4[i]);
+                charOut4 = temp_str4.c_str();
+                c4[i] = charOut4;
+                /////c4[i] = conversion(outputVal4[i]);
+
+                string temp_str5 = to_string(outputVal5[i]);
+                charOut5 = temp_str5.c_str();
+                //cout << charOut5 << "      " << i << endl;
+                c5[i] = charOut5;
+
+                // Send information to server
+                // Create and assign sequence numbers
+                int sequence[2];
+                const char* seqChar[2];
+                sequence[0] = 0;
+                sequence[1] = 1;
+                string seq_str1 = to_string(sequence[1]);
+                seqChar[1] = seq_str1.c_str();
+                string seq_str2 = to_string(sequence[0]);
+                seqChar[0] = seq_str2.c_str();
+
+                char ackbuf[10];
+
+                // Send packets and sequence numbers
+                // Packet 1
+                sendto(sock2, seqChar[1], 2, 0, (sockaddr*)&server, sizeof(server));
+                sendto(sock2, c[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+
+
+                // Confirm Packet Sent and Received
+                //cout << "Packet " << sequence[1] << " Sent Successfully" << endl;
+                int recACK = recvfrom(sock2, ackbuf, 10, 0, (sockaddr*)&server, &serverSize);
+                cout << ackbuf << endl;
+
+                if (ackbuf == "NAK") {
+                    // Receive NAK, resend packet
+                    sendto(sock2, seqChar[1], 2, 0, (sockaddr*)&server, sizeof(server));
+                    sendto(sock2, c[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+                    int recACK = recvfrom(sock2, ackbuf, 10, 0, (sockaddr*)&server, &serverSize);
+                    cout << ackbuf << endl;
+                }
+
+                // Timeout
+                else if (ackbuf == "Timeout") {
+                    sendto(sock2, seqChar[1], 2, 0, (sockaddr*)&server, sizeof(server));
+                    sendto(sock2, c[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+                    int recACK = recvfrom(sock2, ackbuf, 10, 0, (sockaddr*)&server, &serverSize);
+                    cout << ackbuf << endl;
+                }
+
+                // Packet 2
+                sendto(sock2, seqChar[0], 2, 0, (sockaddr*)&server, sizeof(server));
+                sendto(sock2, c2[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+
+                int recACK1 = recvfrom(sock2, ackbuf, 10, 0, (sockaddr*)&server, &serverSize);
+                cout << ackbuf << endl;
+
+                if (ackbuf == "NAK") {
+                    // Receive NAK, resend packet
+                    sendto(sock2, seqChar[0], 2, 0, (sockaddr*)&server, sizeof(server));
+                    sendto(sock2, c2[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+                    int recACK = recvfrom(sock2, ackbuf, 10, 0, (sockaddr*)&server, &serverSize);
+                    cout << ackbuf << endl;
+                }
+
+                // Timeout
+                else if (ackbuf == "Timeout") {
+                    sendto(sock2, seqChar[0], 2, 0, (sockaddr*)&server, sizeof(server));
+                    sendto(sock2, c2[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+                    int recACK = recvfrom(sock2, ackbuf, 10, 0, (sockaddr*)&server, &serverSize);
+                    cout << ackbuf << endl;
+                }
+
+                // Packet 3
+                sendto(sock2, seqChar[1], 2, 0, (sockaddr*)&server, sizeof(server));
+                sendto(sock2, c3[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+
+                int recACK2 = recvfrom(sock2, ackbuf, 10, 0, (sockaddr*)&server, &serverSize);
+                cout << ackbuf << endl;
+
+                if (ackbuf == "NAK") {
+                    // Receive NAK, resend packet
+                    sendto(sock2, seqChar[1], 2, 0, (sockaddr*)&server, sizeof(server));
+                    sendto(sock2, c3[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+                    int recACK = recvfrom(sock2, ackbuf, 10, 0, (sockaddr*)&server, &serverSize);
+                    cout << ackbuf << endl;
+                }
+
+                // Timeout
+                else if (ackbuf == "Timeout") {
+                    sendto(sock2, seqChar[1], 2, 0, (sockaddr*)&server, sizeof(server));
+                    sendto(sock2, c3[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+                    int recACK = recvfrom(sock2, ackbuf, 10, 0, (sockaddr*)&server, &serverSize);
+                    cout << ackbuf << endl;
+                }
+
+                // Packet 4
+                sendto(sock2, seqChar[0], 2, 0, (sockaddr*)&server, sizeof(server));
+                sendto(sock2, c4[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+
+                int recACK3 = recvfrom(sock2, ackbuf, 10, 0, (sockaddr*)&server, &serverSize);
+                cout << ackbuf << endl;
+
+                if (ackbuf == "NAK") {
+                    // Receive NAK, resend packet
+                    sendto(sock2, seqChar[0], 2, 0, (sockaddr*)&server, sizeof(server));
+                    sendto(sock2, c4[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+                    int recACK = recvfrom(sock2, ackbuf, 10, 0, (sockaddr*)&server, &serverSize);
+                    cout << ackbuf << endl;
+                }
+
+                // Timeout
+                else if (ackbuf == "Timeout") {
+                    sendto(sock2, seqChar[0], 2, 0, (sockaddr*)&server, sizeof(server));
+                    sendto(sock2, c4[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+                    int recACK = recvfrom(sock2, ackbuf, 10, 0, (sockaddr*)&server, &serverSize);
+                    cout << ackbuf << endl;
+                }
+
+                // Packet 5
+                sendto(sock2, seqChar[1], 2, 0, (sockaddr*)&server, sizeof(server));
+                sendto(sock2, c5[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+
+                int recACK4 = recvfrom(sock2, ackbuf, 10, 0, (sockaddr*)&server, &serverSize);
+                cout << ackbuf << endl;
+
+                if (ackbuf == "NAK") {
+                    // Receive NAK, resend packet
+                    sendto(sock2, seqChar[1], 2, 0, (sockaddr*)&server, sizeof(server));
+                    sendto(sock2, c5[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+                    int recACK = recvfrom(sock2, ackbuf, 10, 0, (sockaddr*)&server, &serverSize);
+                    cout << ackbuf << endl;
+                }
+
+                // Timeout
+                else if (ackbuf == "Timeout") {
+                        // Resend Packet
+                        sendto(sock2, seqChar[1], 2, 0, (sockaddr*)&server, sizeof(server));
+                        sendto(sock2, c5[i], SIZE, 0, (sockaddr*)&server, sizeof(server));
+                        int recACK = recvfrom(sock2, ackbuf, 10, 0, (sockaddr*)&server, &serverSize);
+                        cout << ackbuf << endl;
+                    }
+                }
+                
+                cout << "All Packets Sent Successfully" << endl;
+            //}
+
+            fout.close();
+            file.close();
+        }
+        ////////////////////////////////////////////////////////////////////////////
+
+        
+
+        cout << "Press m to enter message, f to enter a file name, x to exit" << endl;  // Ask if user wants to send another message
+        cin >> command;
+        cin.ignore(256, '\n');
+    }
+
+
+    // Close the socket
+    closesocket(sock2);
+
+    // Shut down winsock
+    WSACleanup();
+
+    return;
+
+}
+
+
+
+
+/*const char* PacketMake(ifstream infile) {
+    int i = 0;
+    const int SIZE = 2048;
+    int outputVal[SIZE];
+    const char* charOut;
+    const char* c[SIZE];
+
+    for (i = 0; i < SIZE; i++) {
+        outputVal[i] = infile.get();
+
+        /// Convert integer input from .bmp to a const char* that can be sent through the socket
+        string temp_str = to_string(outputVal[i]);
+        charOut = temp_str.c_str();
+        cout << charOut << "      " << i << endl;
+        c[i] = charOut;
+    }
+
+    return c[i];
+}*/
+
+/*const char* conversion(int inputint) {
+    string temp_string = to_string(inputint);
+    const char* charOutput = temp_string.c_str();
+    const char* C = charOutput;
+    return C;
+}*/
