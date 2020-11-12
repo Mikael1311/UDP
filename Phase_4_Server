@@ -1,0 +1,328 @@
+/*  Christopher Patrone
+    Mika Hamiti
+    Saja Freeman
+    Network Design
+    Phase 4
+    This program is written in C++, and the goal is to create a UDP server and client that
+    can send messages back and forth.  Phase 3 aims to send files from the client to the server, and use
+    a finite state machine to detect and correct issues with sending and receiving the data.  Phase 4 aims to
+    improve upon the Phase 3 code to detect and fix issues with the data being sent.
+
+    This file is for the UDP server code.
+
+    REFERENCES:
+
+    [1]  Kelly, Sloan. Sloan Kelly. "Starter UDP Server and Client in C++". 
+         Youtube. 2017. URL: https://www.youtube.com/watch?v=uIanSvWou1M
+
+    [2]  mattew99g. Guided Hacking. "C++ Winsock Networking Tutorial - Introduction".
+         Youtube. 2019. URL: https://www.youtube.com/watch?v=GiOgWfmWzPY
+
+    [3]  Tougher, Rob. Linux Gazette. "Linux Socket Programming in C++". 
+         tldp.org. 2002. URL: https://tldp.org/LDP/LG/issue74/tougher.html#4
+
+    [4]  Hall, Brian. Beej's Guide to Network Programming. "Using Internet Sockets". 
+         beej.us. 2019. URL: https://beej.us/guide/bgnet/html/#windows
+
+    [5]  Cipher Deprogres. "C++ Winsock Transfer Data with Socket". Youtube. 2018.
+         URL: https://www.youtube.com/watch?v=NHrk33uCzL8
+
+*/
+
+#include <iostream>
+#include <ws2tcpip.h>
+#include <fstream>  ///// For opening files
+#include "atlstr.h"  ///// For opening bitmap images
+#include <windows.h>
+#include <string>
+#include<dos.h>   //for Sleep()
+
+#include <cstdlib>
+//#include <sys/sendfile.h>
+
+#pragma comment (lib, "ws2_32.lib")  // Add winsock library
+
+using namespace std;
+
+
+void main()
+{
+    // Initialize winsock
+    WSADATA data;
+    WORD version = MAKEWORD(2, 2);
+    int wstart = WSAStartup(version, &data);
+
+    if (wstart != 0) {
+        cout << "ERROR: Failure to start up winsock " << wstart << endl;  // ERROR, winsock cannot start up
+        return;
+    }
+
+    // Create a socket
+    SOCKET sock = socket(AF_INET, SOCK_DGRAM, 0);  // DGRAM -> Datagram -> UDP Socket
+    sockaddr_in sockAdd;
+    sockAdd.sin_addr.S_un.S_addr = ADDR_ANY;  // Assign ip address to socket
+    sockAdd.sin_family = AF_INET;  // Address family
+    sockAdd.sin_port = htons(54000);  // Convert to big endian
+    // htons -> Host To Network Short
+
+    // Check for errors in binding socket
+    if (bind(sock, (sockaddr*)&sockAdd, sizeof(sockAdd)) == SOCKET_ERROR) {
+        cout << "ERROR: Failure to bind socket " << WSAGetLastError() << endl; 
+        return;
+    }
+
+    else {
+        cout << "Server Ready to Recieve from Client" << endl;
+    }
+
+    // Look for client connection information
+    sockaddr_in client;
+    int clientLength = sizeof(client);
+    ZeroMemory(&client, sizeof(client, clientLength));  // Zero client information
+
+    // Create buffer to hold client information
+    char buffer[1024];
+    int intbuf[1024];
+
+    // Loop and recieve information from client
+    while (true) {
+        ZeroMemory(buffer, 1024);  // Zero the buffer
+
+        // Wait for message from the client
+        int bytesRec = recvfrom(sock, buffer, 1024, 0, (sockaddr*)&client, &clientLength);
+
+        // Check for errors
+        if (bytesRec == SOCKET_ERROR) {
+            cout << "ERROR: Failure to receive from client" << WSAGetLastError() << endl;
+            return;
+        }
+
+        ////////////////////////////////////////////////////////////////////
+        //ifstream in;  // File to copy from
+        //in.open("Pier.bmp", ios::binary);
+        /* use the function to recv file name here */
+
+        
+
+
+        // Client message information
+        char clientIP[256];
+        ZeroMemory(clientIP, 256);  // Zero buffer for client message
+
+        // Converts from internet address in binary format to standard text format
+        inet_ntop(AF_INET, &client.sin_addr, clientIP, 256);
+
+        // Output message received from client and the client's IP address
+        cout << "Message received from " << clientIP << " : " << buffer << endl;
+
+
+        /// Send message back to client, confirming message has been received
+        int sendOkay = sendto(sock, buffer, 1024, 0, (sockaddr*)&client, clientLength);
+
+        /// Check for errors sending message
+        if (sendOkay == SOCKET_ERROR) {
+            cout << "ERROR: Message did not send back to client" << WSAGetLastError() << endl;
+        }
+
+
+
+
+
+        ///// Try to open a file
+
+        ofstream ofile;
+        ofile.open("outputfile.bmp", ios::binary);
+
+        if (ofile.is_open()) {
+            cout << "File " << buffer << " is open" << endl;
+        }
+        else {
+            cout << "File could not be opened" << endl;
+            return;
+        }
+
+        // receive file data
+        //int Rem_data = 0;
+        //while (Rem_data > 1024)
+        //{
+            //ZeroMemory(buffer, 1024);  // Zero the buffer
+            int bytes = recvfrom(sock, buffer, 1024, 0, (sockaddr*)&client, &clientLength);
+
+            //for (int k = 0; k <= 1024; k++) {
+                //int receiveddata = strtol(buffer,0,0);
+                //ofile.put(receiveddata);
+            //}
+
+            //for (int i = 0; i < 1920 * 1080 * 3 + 54; i++) { // Draw the bmp image to the output file
+            const int SIZE = 4096;
+            int d[SIZE];
+            char buf2[SIZE];
+            char buf3[SIZE];
+            char buf4[SIZE];
+            char buf5[SIZE];
+            char buf6[SIZE];
+            int d2[SIZE];
+            int d3[SIZE];
+            int d4[SIZE];
+            int d5[SIZE];
+        //ZeroMemory(buffer, 1024);  // Zero the buffer
+        //for (int k = 0; k < 2/*k < 1920 * 1080 * 3 + 54*/; k++) {
+            char sequenceNum[2];
+            int sNum;
+            
+            // Loop to receive information about the .bmp from the client
+            for (int i = 0; i < SIZE; i++) {
+
+                ZeroMemory(buf2, SIZE);  // Zero the buffer
+                ZeroMemory(sequenceNum, 2);  // Zero sequenceNum
+
+                // Receive sequence number
+                int sn = recvfrom(sock, sequenceNum, 2, 0, (sockaddr*)&client, &clientLength);
+                sNum = atoi(sequenceNum);
+
+                if (sNum == 1) {
+                    // Receive data
+                    int bytes = recvfrom(sock, buf2, SIZE, 0, (sockaddr*)&client, &clientLength);
+
+                    // Send back ACK
+                    int sendOkay = sendto(sock, "ACK", 4, 0, (sockaddr*)&client, clientLength);
+
+                    // Redraw to outputfile.bmp
+                    d[i] = atoi(buf2);
+                    ofile.put(d[i]);
+                }
+
+                int sn2 = recvfrom(sock, sequenceNum, 2, 0, (sockaddr*)&client, &clientLength);
+                sNum = atoi(sequenceNum);
+
+                if (sNum == 0) {
+                    int bytes2 = recvfrom(sock, buf3, SIZE, 0, (sockaddr*)&client, &clientLength);
+                    int sendOkay = sendto(sock, "ACK", 4, 0, (sockaddr*)&client, clientLength);
+                    d2[i] = atoi(buf3);
+                    ofile.put(d2[i]);
+                }
+
+                int sn3 = recvfrom(sock, sequenceNum, 2, 0, (sockaddr*)&client, &clientLength);
+                sNum = atoi(sequenceNum);
+
+                if (sNum == 1) {
+
+                    if ((i == 4000) || (i == 4001) || (i == 4002) || (i == 4003)) {
+                        // Simulate a NAK, packet was not received
+                        int sendOkay = sendto(sock, "NAK", 4, 0, (sockaddr*)&client, clientLength);
+                        // Wait for packet to be resent
+                        int bytes3NAK = recvfrom(sock, buf4, SIZE, 0, (sockaddr*)&client, &clientLength);
+                        // Once packet has been received, draw part of image to outputfile.bmp
+                        d3[i] = atoi(buf4);
+                        ofile.put(d3[i]);
+                    }
+
+                    else {
+                        int bytes3 = recvfrom(sock, buf4, SIZE, 0, (sockaddr*)&client, &clientLength);
+                        int sendOkay = sendto(sock, "ACK", 4, 0, (sockaddr*)&client, clientLength);
+                        d3[i] = atoi(buf4);
+                        ofile.put(d3[i]);
+                    }
+                }
+
+                int sn4 = recvfrom(sock, sequenceNum, 2, 0, (sockaddr*)&client, &clientLength);
+                sNum = atoi(sequenceNum);
+
+                if (sNum == 0) {
+
+                    if ((i == 4000) || (i == 4001) || (i == 176) || (i == 283) || 
+                        (i == 72) || (i == 4009) || (i == 3278) ||
+                        (i == 4090) || (i == 4091) || (i == 4092) ||
+                        (i == 4093) || (i == 3088) || (i == 3188) ||
+                        (i == 3288) || (i == 3388) || (i == 3488) ||
+                        (i == 3588) || (i == 3689) || (i == 3709) ||
+                        (i == 3804) || (i == 3910) || (i == 3999)) {
+                        // Simulate a NAK, packet was not received
+                        int sendOkay = sendto(sock, "NAK", 4, 0, (sockaddr*)&client, clientLength);
+                        // Wait for packet to be resent
+                        int bytes4 = recvfrom(sock, buf5, SIZE, 0, (sockaddr*)&client, &clientLength);
+                        // Once packet has been received, draw part of image to outputfile.bmp
+                        d4[i] = atoi(buf5);
+                        ofile.put(d4[i]);
+                    }
+
+                    else if ((i == 3898) || (i == 2071) || (i == 1026) ||
+                             (i == 4001) || (i == 4002) || (i == 4096)) {
+                        // Simulate timeout, no ACK or NAK sent back to client
+                        //int bytes5TIMEOUT = recvfrom(sock, buf4, SIZE, 0, (sockaddr*)&client, &clientLength);
+                        Sleep(50);
+                        int sendOkay = sendto(sock, "Timeout", 10, 0, (sockaddr*)&client, clientLength);
+                        // Wait for packet to be resent
+                        int bytes4TIMEOUTr = recvfrom(sock, buf6, SIZE, 0, (sockaddr*)&client, &clientLength);
+                        // Once packet has been received, draw part of image to outputfile.bmp
+                        d4[i] = atoi(buf5);
+                        ofile.put(d4[i]);
+                    }
+
+                    else {
+                        int bytes4 = recvfrom(sock, buf5, SIZE, 0, (sockaddr*)&client, &clientLength);
+                        int sendOkay = sendto(sock, "ACK", 4, 0, (sockaddr*)&client, clientLength);
+                        d4[i] = atoi(buf5);
+                        ofile.put(d4[i]);
+                    }
+                }
+
+                int sn5 = recvfrom(sock, sequenceNum, 2, 0, (sockaddr*)&client, &clientLength);
+                sNum = atoi(sequenceNum);
+
+                if (sNum == 1) {
+
+                    if ((i == 3898) || (i == 3899) || (i == 4097)) {
+                        // Simulate timeout, no ACK or NAK sent back to client
+                        //int bytes5TIMEOUT = recvfrom(sock, buf4, SIZE, 0, (sockaddr*)&client, &clientLength);
+                        Sleep(50);
+                        int sendOkay = sendto(sock, "Timeout", 10, 0, (sockaddr*)&client, clientLength);
+                        // Wait for packet to be resent
+                        int bytes5TIMEOUTr = recvfrom(sock, buf6, SIZE, 0, (sockaddr*)&client, &clientLength);
+                        // Once packet has been received, draw part of image to outputfile.bmp
+                        d5[i] = atoi(buf6);
+                        ofile.put(d5[i]);
+                    }
+
+                    else {
+                        int bytes5 = recvfrom(sock, buf6, SIZE, 0, (sockaddr*)&client, &clientLength);
+                        int sendOkay = sendto(sock, "ACK", 4, 0, (sockaddr*)&client, clientLength);
+                        d5[i] = atoi(buf6);
+                        ofile.put(d5[i]);
+                    }
+                }
+            }
+
+            for (int j = 0; j < 1920 * 1080 * 3 + 54 - SIZE; j++) {
+                ofile.put(d[7]);
+            }
+
+            /*for (int k = 0; k < 1920 * 1080 * 3 + 54 - 3072; k++) {
+                ofile.put(50);
+                ofile.put(69);
+                ofile.put(d[1008]);
+            }*/
+        //}
+        //}
+
+        //Rem_data -= bytes;
+    //}
+
+    //for (int i = 0; i < 1920 * 1080 * 3 + 54; i++)  // Draw the bmp image to the output file
+      //  ofile.put(in.get());
+
+        // Close File
+        ofile.close();
+
+        //in.close();
+        ////////////////////////////////////////////////////////////////
+    }
+
+    // Close socket
+    closesocket(sock);
+
+    // Shut down winsock
+    WSACleanup();
+
+    return;
+}
