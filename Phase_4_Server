@@ -5,8 +5,9 @@
     Phase 4
     This program is written in C++, and the goal is to create a UDP server and client that
     can send messages back and forth.  Phase 3 aims to send files from the client to the server, and use
-    a finite state machine to detect and correct issues with sending and receiving the data.  Phase 4 aims to
+    a finite state machine to detect and correct issues with sending and receiving the data. Phase 4 aims to
     improve upon the Phase 3 code to detect and fix issues with the data being sent.
+
 
     This file is for the UDP server code.
 
