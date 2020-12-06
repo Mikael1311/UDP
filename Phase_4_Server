@@ -1,12 +1,14 @@
 /*  Christopher Patrone
+   /*  Christopher Patrone
     Mika Hamiti
     Saja Freeman
     Network Design
-    Phase 4
+    Phase 5
     This program is written in C++, and the goal is to create a UDP server and client that
     can send messages back and forth.  Phase 3 aims to send files from the client to the server, and use
     a finite state machine to detect and correct issues with sending and receiving the data. Phase 4 aims to
-    improve upon the Phase 3 code to detect and fix issues with the data being sent.
+    improve upon the Phase 3 code to detect and fix issues with the data being sent.  Phase 5 aims to enhance 
+    the code and implement pipelined data transfer.
 
 
     This file is for the UDP server code.
@@ -37,6 +39,8 @@
 #include <windows.h>
 #include <string>
 #include<dos.h>   //for Sleep()
+
+#include <time.h>  //Timer
 
 #include <cstdlib>
 //#include <sys/sendfile.h>
@@ -273,16 +277,34 @@ void main()
 
                 if (sNum == 1) {
 
-                    if ((i == 3898) || (i == 3899) || (i == 4097)) {
+                    if ((i == 3898) || (i == 3899) || (i == 4097) ||
+                        (i == 2118) || (i == 2119) || (i == 2117) ||
+                        (i == 2128) || (i == 2129) || (i == 2127) ||
+                        (i == 4096) || (i == 4095) || (i == 4094) ||
+                        (i == 2138) || (i == 2139) || (i == 2137)) {
                         // Simulate timeout, no ACK or NAK sent back to client
                         //int bytes5TIMEOUT = recvfrom(sock, buf4, SIZE, 0, (sockaddr*)&client, &clientLength);
-                        Sleep(50);
-                        int sendOkay = sendto(sock, "Timeout", 10, 0, (sockaddr*)&client, clientLength);
-                        // Wait for packet to be resent
-                        int bytes5TIMEOUTr = recvfrom(sock, buf6, SIZE, 0, (sockaddr*)&client, &clientLength);
-                        // Once packet has been received, draw part of image to outputfile.bmp
-                        d5[i] = atoi(buf6);
-                        ofile.put(d5[i]);
+                        //////////Sleep(50);
+
+
+                        time_t tout = time(NULL);  // Current Time
+                        double toutStart = tout;  // Set start time
+                        Sleep(50);  // Wait for 50 ms
+                        double toutEnd = tout;  // Set end time
+
+                        if (toutStart <= toutEnd) {  // Compare start to end time to see if timeout
+
+                            int sendOkay = sendto(sock, "Timeout", 10, 0, (sockaddr*)&client, clientLength);
+                            // Wait for packet to be resent
+                            int bytes5TIMEOUTr = recvfrom(sock, buf6, SIZE, 0, (sockaddr*)&client, &clientLength);
+                            // Once packet has been received, draw part of image to outputfile.bmp
+                            d5[i] = atoi(buf6);
+                            ofile.put(d5[i]);
+                        }
+
+                        else {
+                            continue;  // Continue if no timeout
+                        }
                     }
 
                     else {
@@ -294,6 +316,7 @@ void main()
                 }
             }
 
+            // Fill in the rest of the bmp with a random color if not enough packets
             for (int j = 0; j < 1920 * 1080 * 3 + 54 - SIZE; j++) {
                 ofile.put(d[7]);
             }
