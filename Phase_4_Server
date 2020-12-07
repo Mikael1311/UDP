@@ -1,5 +1,4 @@
 /*  Christopher Patrone
-   /*  Christopher Patrone
     Mika Hamiti
     Saja Freeman
     Network Design
@@ -139,7 +138,7 @@ void main()
         ofile.open("outputfile.bmp", ios::binary);
 
         if (ofile.is_open()) {
-            cout << "File " << buffer << " is open" << endl;
+            cout << "File ""outputfile.bmp"" is open" << endl;
         }
         else {
             cout << "File could not be opened" << endl;
@@ -283,9 +282,6 @@ void main()
                         (i == 4096) || (i == 4095) || (i == 4094) ||
                         (i == 2138) || (i == 2139) || (i == 2137)) {
                         // Simulate timeout, no ACK or NAK sent back to client
-                        //int bytes5TIMEOUT = recvfrom(sock, buf4, SIZE, 0, (sockaddr*)&client, &clientLength);
-                        //////////Sleep(50);
-
 
                         time_t tout = time(NULL);  // Current Time
                         double toutStart = tout;  // Set start time
